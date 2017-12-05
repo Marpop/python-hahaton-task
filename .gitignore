@@ -1,0 +1,11 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+
+# local database
+*.sqlite3
+
+# virtualenv
+*env/
+
+# test cache
+.cache
