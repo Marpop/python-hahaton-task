@@ -1,9 +1,6 @@
-from random import randint, choice
+from random import choice, randint
 
-EMPTY_BOARD = [
-    [None for _ in range(15)]
-    for __ in range(15)
-]
+EMPTY_BOARD = [[None for _ in range(15)] for __ in range(15)]
 
 OWNER = 'o'
 GUEST = 'g'
@@ -31,10 +28,8 @@ def moves_for_horizontal_win():
     """
     column = randint(0, 14)
     winning_moves = [(column, y) for y in range(5)]
-    losing_moves = [
-        ((column + 1 + x) if column < 7 else (column - 1 - x), randint(x, 14))
-        for x in range(4)
-    ]
+    losing_moves = [((column + 1 + x) if column < 7 else (column - 1 - x),
+                     randint(x, 14)) for x in range(4)]
     return winning_moves, losing_moves
 
 
@@ -60,10 +55,10 @@ def moves_for_vertical_win():
     """
     row = randint(0, 14)
     winning_moves = [(14 - y, row) for y in range(5)]
-    losing_moves = [
-        (randint(x, 14), (row + 1 + x) if row < 7 else (row - 1 - x),)
-        for x in range(4)
-    ]
+    losing_moves = [(
+        randint(x, 14),
+        (row + 1 + x) if row < 7 else (row - 1 - x),
+    ) for x in range(4)]
     return winning_moves, losing_moves
 
 
@@ -89,14 +84,10 @@ def moves_for_diagonal_1_win():
     """
     start_from_x, start_from_y = randint(4, 10), randint(4, 10)
     go_to = choice([1, -1])
-    winning_moves = [
-        (start_from_x + (m * go_to), start_from_y + (m * go_to))
-        for m in range(5)
-    ]
-    losing_moves = [
-        (start_from_x + (-m * go_to), start_from_y + (-m * go_to))
-        for m in range(1, 5)
-    ]
+    winning_moves = [(start_from_x + (m * go_to), start_from_y + (m * go_to))
+                     for m in range(5)]
+    losing_moves = [(start_from_x + (-m * go_to), start_from_y + (-m * go_to))
+                    for m in range(1, 5)]
     return winning_moves, losing_moves
 
 
@@ -123,14 +114,10 @@ def moves_for_diagonal_2_win():
     start_from_x, start_from_y = randint(4, 10), randint(4, 10)
 
     go_to = choice([1, -1])
-    winning_moves = [
-        (start_from_x + (m * go_to), start_from_y + (-m * go_to))
-        for m in range(5)
-    ]
-    losing_moves = [
-        (start_from_x + (-m * go_to), start_from_y + (m * go_to))
-        for m in range(1, 5)
-    ]
+    winning_moves = [(start_from_x + (m * go_to), start_from_y + (-m * go_to))
+                     for m in range(5)]
+    losing_moves = [(start_from_x + (-m * go_to), start_from_y + (m * go_to))
+                    for m in range(1, 5)]
     return winning_moves, losing_moves
 
 
@@ -153,10 +140,9 @@ def win_board(first=OWNER, win_at='horizontal'):
     with_moves = set(winning_moves + losing_moves)
     assert len(with_moves) == 9
 
-    board = [
-        [token(x, y) if (x, y) in with_moves else None for y in range(15)]
-        for x in range(15)
-    ]
+    board = [[
+        token(x, y) if (x, y) in with_moves else None for y in range(15)
+    ] for x in range(15)]
 
     return board, (winning_moves, losing_moves)
 
@@ -164,16 +150,14 @@ def win_board(first=OWNER, win_at='horizontal'):
 def draw_board(first=OWNER):
     second = GUEST if first == OWNER else OWNER
 
-    board = [
-        [first if (x + (y // 3 % 2)) % 2 == 0 and (x, y) != (14, 14) else second
-         for y in range(15)] for x in range(15)
-    ]
-    moves = (
-        [(x, y) for y in range(15) for x in range(15)
-         if (x + (y // 3 % 2)) % 2 == 0 and (x, y) != (14, 14)],
-        [(x, y) for y in range(15) for x in range(15)
-         if (x + (y // 3 % 2)) % 2 == 1 or (x, y) == (14, 14)]
-    )
+    board = [[
+        first if (x + (y // 3 % 2)) % 2 == 0 and (x, y) != (14, 14) else second
+        for y in range(15)
+    ] for x in range(15)]
+    moves = ([(x, y) for y in range(15) for x in range(15)
+              if (x + (y // 3 % 2)) % 2 == 0 and (x, y) != (14, 14)],
+             [(x, y) for y in range(15) for x in range(15)
+              if (x + (y // 3 % 2)) % 2 == 1 or (x, y) == (14, 14)])
 
     return board, moves
 

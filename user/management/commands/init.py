@@ -10,8 +10,8 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         user_model = get_user_model()
         try:
-            admin = user_model.objects.get(username=ADMIN_USERNAME,
-                                           email=ADMIN_EMAIL)
+            admin = user_model.objects.get(
+                username=ADMIN_USERNAME, email=ADMIN_EMAIL)
             admin.set_password(ADMIN_PASSWORD)
             admin.save()
         except user_model.DoesNotExist:

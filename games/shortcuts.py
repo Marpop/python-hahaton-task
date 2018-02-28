@@ -7,7 +7,8 @@ class TestHelpers:
     def _create_game(self, player_client):
         """Shortcut to create game using given APIClient"""
         return player_client.post(
-            '/api/games/', {},
+            '/api/games/',
+            {},
         ).json()['id']
 
     def _game_ops(self, game_id, player_client, game_ops='join'):
@@ -18,9 +19,8 @@ class TestHelpers:
         :param game_ops: str - name of the operation
         :return: Response from the APIClient
         """
-        return player_client.post(
-            '/api/games/{}/{}/'.format(game_id, game_ops), {}
-        )
+        return player_client.post('/api/games/{}/{}/'.format(
+            game_id, game_ops), {})
 
     def _create_working_game(self, owner_client=None, guest_client=None):
         """
@@ -45,8 +45,9 @@ class TestHelpers:
         :return: OWNER or GUEST
         """
         return OWNER if next(
-            filter(lambda x: x['first'], response_dict['players'])
-        )['user'] == (owner_id or self.player_1.id) else GUEST
+            filter(lambda x: x['first'],
+                   response_dict['players']))['user'] == (
+                       owner_id or self.player_1.id) else GUEST
 
     def _make_moves(self, game_id, order, moves, mapping=None):
         """
@@ -67,7 +68,8 @@ class TestHelpers:
                 x, y = move
                 response = (mapping or self.default_game_mapping)[player].post(
                     '/api/games/{}/moves/'.format(game_id),
-                    {'x': x, 'y': y},
+                    {'x': x,
+                     'y': y},
                 )
                 self.assertEqual(response.status_code, 200)
         return response
@@ -84,8 +86,13 @@ class TestHelpers:
         else:
             return GUEST, OWNER
 
-    def _validate_me(self, player_client, won=0, draws=0, won_by_surrender=0,
-                     lost=0, surrendered=0):
+    def _validate_me(self,
+                     player_client,
+                     won=0,
+                     draws=0,
+                     won_by_surrender=0,
+                     lost=0,
+                     surrendered=0):
         """
         Validates if endpoint `api/user/me/` returns proper data
         :param player_client: APIClient of given player
@@ -96,9 +103,7 @@ class TestHelpers:
         :param lost: expected number of games lost
         :param surrendered: expected number of games surrendered
         """
-        response = player_client.get(
-            '/api/user/me/'
-        )
+        response = player_client.get('/api/user/me/')
         self.assertEqual(response.status_code, 200)
 
         response_json = response.json()

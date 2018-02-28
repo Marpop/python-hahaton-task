@@ -1,5 +1,5 @@
 from django.contrib.auth import get_user_model
-from rest_framework.test import APITestCase, APIClient
+from rest_framework.test import APIClient, APITestCase
 
 from games.example_data import *
 from games.shortcuts import TestHelpers
@@ -44,18 +44,14 @@ class GamesAPITestCase(APITestCase, TestHelpers):
          - rejects unauthenticated user
          - authenticated user receives empty list of games
         """
-        response = self.no_player_client.get(
-            '/api/games/'
-        )
+        response = self.no_player_client.get('/api/games/')
         self.assertEqual(response.status_code, 403)
         self.assertDictEqual(
             response.json(),
             {'detail': 'Authentication credentials were not provided.'},
         )
 
-        response = self.player_1_client.get(
-            '/api/games/'
-        )
+        response = self.player_1_client.get('/api/games/')
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json(), [])
 
@@ -65,7 +61,8 @@ class GamesAPITestCase(APITestCase, TestHelpers):
          - game without board is visible to other users
         """
         response = self.player_1_client.post(
-            '/api/games/', {},
+            '/api/games/',
+            {},
         )
         response_json = response.json()
 
@@ -81,9 +78,7 @@ class GamesAPITestCase(APITestCase, TestHelpers):
         )
         expected_dict.pop('board')
 
-        response = self.player_2_client.get(
-            '/api/games/'
-        )
+        response = self.player_2_client.get('/api/games/')
 
         self.assertEqual(response.status_code, 200)
         self.assertJSONEqual(
@@ -99,17 +94,20 @@ class GamesAPITestCase(APITestCase, TestHelpers):
         game_id = self._create_game(self.player_1_client)
 
         response = self.player_2_client.post(
-            '/api/games/{}/join/'.format(game_id), {},
+            '/api/games/{}/join/'.format(game_id),
+            {},
         )
 
         expected_dict = base_game_dict(game_id, self.player_1)
         expected_dict['players_count'] = 2
-        expected_dict['players'].append(base_player_dict(game_id,
-                                                         self.player_2, False))
+        expected_dict['players'].append(
+            base_player_dict(game_id, self.player_2, False))
 
         self.assertEqual(response.status_code, 200)
-        self.assertDictEqual(response.json(),
-                             {'success': True, 'game': expected_dict})
+        self.assertDictEqual(response.json(), {
+            'success': True,
+            'game': expected_dict
+        })
 
     def test_cannot_join_game(self):
         """
@@ -120,7 +118,8 @@ class GamesAPITestCase(APITestCase, TestHelpers):
 
         # Try join own game
         response = self.player_1_client.post(
-            '/api/games/{}/join/'.format(game_id), {},
+            '/api/games/{}/join/'.format(game_id),
+            {},
         )
 
         self.assertEqual(response.status_code, 400)
@@ -128,12 +127,14 @@ class GamesAPITestCase(APITestCase, TestHelpers):
 
         # Proper game join
         self.player_2_client.post(
-            '/api/games/{}/join/'.format(game_id), {},
+            '/api/games/{}/join/'.format(game_id),
+            {},
         )
 
         # Attempt to join a full game
         response = self.player_3_client.post(
-            '/api/games/{}/join/'.format(game_id), {},
+            '/api/games/{}/join/'.format(game_id),
+            {},
         )
 
         self.assertEqual(response.status_code, 400)
@@ -147,18 +148,21 @@ class GamesAPITestCase(APITestCase, TestHelpers):
         game_id = self._create_game(self.player_1_client)
 
         response = self.player_2_client.post(
-            '/api/games/{}/leave/'.format(game_id), {},
+            '/api/games/{}/leave/'.format(game_id),
+            {},
         )
 
         self.assertEqual(response.status_code, 400)
         self.assertDictEqual(response.json(), ERROR_NOT_IN_GAME)
 
         self.player_2_client.post(
-            '/api/games/{}/join/'.format(game_id), {},
+            '/api/games/{}/join/'.format(game_id),
+            {},
         )
 
         response = self.player_2_client.post(
-            '/api/games/{}/leave/'.format(game_id), {},
+            '/api/games/{}/leave/'.format(game_id),
+            {},
         )
 
         self.assertEqual(response.status_code, 200)
@@ -173,7 +177,8 @@ class GamesAPITestCase(APITestCase, TestHelpers):
         self._game_ops(game_id, self.player_2_client, 'leave')
 
         response = self.player_2_client.post(
-            '/api/games/{}/join/'.format(game_id), {},
+            '/api/games/{}/join/'.format(game_id),
+            {},
         )
 
         self.assertEqual(response.status_code, 200)
@@ -186,14 +191,13 @@ class GamesAPITestCase(APITestCase, TestHelpers):
         self._game_ops(game_id, self.player_2_client, 'join')
 
         response = self.player_1_client.post(
-            '/api/games/{}/start/'.format(game_id), {},
+            '/api/games/{}/start/'.format(game_id),
+            {},
         )
 
         self.assertEqual(response.status_code, 200)
 
-        response = self.player_2_client.get(
-            '/api/games/{}'.format(game_id),
-        )
+        response = self.player_2_client.get('/api/games/{}'.format(game_id), )
 
         self.assertEqual(response.status_code, 200)
 
@@ -202,8 +206,7 @@ class GamesAPITestCase(APITestCase, TestHelpers):
         self.assertTrue(response_json['started'])
         # One of the players is designated to make the first move
         self.assertTrue(
-            any(filter(lambda p: p['first'], response_json['players']))
-        )
+            any(filter(lambda p: p['first'], response_json['players'])))
 
     def test_start_game_guest(self):
         """
@@ -213,14 +216,13 @@ class GamesAPITestCase(APITestCase, TestHelpers):
         self._game_ops(game_id, self.player_2_client, 'join')
 
         response = self.player_2_client.post(
-            '/api/games/{}/start/'.format(game_id), {},
+            '/api/games/{}/start/'.format(game_id),
+            {},
         )
 
         self.assertEqual(response.status_code, 200)
 
-        response = self.player_1_client.get(
-            '/api/games/{}'.format(game_id),
-        )
+        response = self.player_1_client.get('/api/games/{}'.format(game_id), )
         self.assertEqual(response.status_code, 200)
 
         response_json = response.json()
@@ -228,8 +230,7 @@ class GamesAPITestCase(APITestCase, TestHelpers):
         self.assertTrue(response_json['started'])
         # One of the players is designated to make the first move
         self.assertTrue(
-            any(filter(lambda p: p['first'], response_json['players']))
-        )
+            any(filter(lambda p: p['first'], response_json['players'])))
 
     def test_cannot_leave_game(self):
         """
@@ -239,7 +240,8 @@ class GamesAPITestCase(APITestCase, TestHelpers):
                                             self.player_2_client)
 
         response = self.player_2_client.post(
-            '/api/games/{}/leave/'.format(game_id), {},
+            '/api/games/{}/leave/'.format(game_id),
+            {},
         )
 
         self.assertEqual(response.status_code, 400)
@@ -252,23 +254,22 @@ class GamesAPITestCase(APITestCase, TestHelpers):
         game_id = self._create_working_game(self.player_1_client,
                                             self.player_2_client)
 
-        response = self.player_1_client.get(
-            '/api/games/{}'.format(game_id),
-        )
+        response = self.player_1_client.get('/api/games/{}'.format(game_id), )
         self.assertEqual(response.status_code, 200)
 
         should_be_first = self._first_player(response.json())
 
-        response = (self.player_1_client if should_be_first == OWNER else
-                    self.player_2_client).post(
-            '/api/games/{}/moves/'.format(game_id),
-            {'x': 0, 'y': 0}
-        )
+        response = (self.player_1_client if
+                    should_be_first == OWNER else self.player_2_client).post(
+                        '/api/games/{}/moves/'.format(game_id), {
+                            'x': 0,
+                            'y': 0
+                        })
 
         expected_dict = base_game_dict(game_id, self.player_1)
         expected_dict['players_count'] = 2
-        expected_dict['players'].append(base_player_dict(game_id,
-                                                         self.player_2, False))
+        expected_dict['players'].append(
+            base_player_dict(game_id, self.player_2, False))
         expected_dict['board'][0][0] = should_be_first
         expected_dict['started'] = True
 
@@ -296,24 +297,24 @@ class GamesAPITestCase(APITestCase, TestHelpers):
         game_id = self._create_working_game(self.player_1_client,
                                             self.player_2_client)
 
-        response = self.player_1_client.get(
-            '/api/games/{}'.format(game_id),
-        )
+        response = self.player_1_client.get('/api/games/{}'.format(game_id), )
         self.assertEqual(response.status_code, 200)
 
         order = self._players_order(response.json())
 
         response = self.default_game_mapping[order[1]].post(
-            '/api/games/{}/moves/'.format(game_id),
-            {'x': 0, 'y': 0}
-        )
+            '/api/games/{}/moves/'.format(game_id), {
+                'x': 0,
+                'y': 0
+            })
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.json(), ERROR_NOT_TURN)
 
         response = self.default_game_mapping[order[0]].post(
-            '/api/games/{}/moves/'.format(game_id),
-            {'x': 0, 'y': 0}
-        )
+            '/api/games/{}/moves/'.format(game_id), {
+                'x': 0,
+                'y': 0
+            })
         self.assertEqual(response.status_code, 200)
 
         response_json = response.json()
@@ -325,9 +326,10 @@ class GamesAPITestCase(APITestCase, TestHelpers):
         self.assertEqual(response_json['move']['y'], 0)
 
         response = self.default_game_mapping[order[0]].post(
-            '/api/games/{}/moves/'.format(game_id),
-            {'x': 0, 'y': 1}
-        )
+            '/api/games/{}/moves/'.format(game_id), {
+                'x': 0,
+                'y': 1
+            })
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.json(), ERROR_NOT_TURN)
 
@@ -338,23 +340,23 @@ class GamesAPITestCase(APITestCase, TestHelpers):
         game_id = self._create_working_game(self.player_1_client,
                                             self.player_2_client)
 
-        response = self.player_1_client.get(
-            '/api/games/{}'.format(game_id),
-        )
+        response = self.player_1_client.get('/api/games/{}'.format(game_id), )
         self.assertEqual(response.status_code, 200)
 
         order = self._players_order(response.json())
 
         response = self.default_game_mapping[order[0]].post(
-            '/api/games/{}/moves/'.format(game_id),
-            {'x': 0, 'y': 0}
-        )
+            '/api/games/{}/moves/'.format(game_id), {
+                'x': 0,
+                'y': 0
+            })
         self.assertEqual(response.status_code, 200)
 
         response = self.default_game_mapping[order[1]].post(
-            '/api/games/{}/moves/'.format(game_id),
-            {'x': 0, 'y': 0}
-        )
+            '/api/games/{}/moves/'.format(game_id), {
+                'x': 0,
+                'y': 0
+            })
         self.assertEqual(response.status_code, 400)
         self.assertDictEqual(response.json(), ERROR_SPOT_TAKEN)
 
@@ -365,23 +367,23 @@ class GamesAPITestCase(APITestCase, TestHelpers):
         game_id = self._create_working_game(self.player_1_client,
                                             self.player_2_client)
 
-        response = self.player_1_client.get(
-            '/api/games/{}'.format(game_id),
-        )
+        response = self.player_1_client.get('/api/games/{}'.format(game_id), )
         self.assertEqual(response.status_code, 200)
 
         order = self._players_order(response.json())
 
         response = self.default_game_mapping[order[0]].post(
-            '/api/games/{}/moves/'.format(game_id),
-            {'x': 0, 'y': 0}
-        )
+            '/api/games/{}/moves/'.format(game_id), {
+                'x': 0,
+                'y': 0
+            })
         self.assertEqual(response.status_code, 200)
 
         response = self.player_3_client.post(
-            '/api/games/{}/moves/'.format(game_id),
-            {'x': 0, 'y': 1}
-        )
+            '/api/games/{}/moves/'.format(game_id), {
+                'x': 0,
+                'y': 1
+            })
         self.assertEqual(response.status_code, 400)
         self.assertDictEqual(response.json(), ERROR_NOT_IN_GAME)
 
@@ -394,14 +396,11 @@ class GamesAPITestCase(APITestCase, TestHelpers):
                                             self.player_2_client)
 
         response = self.player_1_client.post(
-            '/api/games/{}/surrender/'.format(game_id), {}
-        )
+            '/api/games/{}/surrender/'.format(game_id), {})
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.json()['success'])
 
-        response = self.player_1_client.get(
-            '/api/games/{}'.format(game_id),
-        )
+        response = self.player_1_client.get('/api/games/{}'.format(game_id), )
         self.assertEqual(response.status_code, 200)
 
         response_json = response.json()
@@ -428,9 +427,7 @@ class GamesAPITestCase(APITestCase, TestHelpers):
                                             self.player_2_client)
 
         # Check order of moves
-        response = self.player_1_client.get(
-            '/api/games/{}'.format(game_id),
-        )
+        response = self.player_1_client.get('/api/games/{}'.format(game_id), )
         self.assertEqual(response.status_code, 200)
 
         if self._first_player(response.json()) == OWNER:
@@ -483,9 +480,7 @@ class GamesAPITestCase(APITestCase, TestHelpers):
                                             self.player_2_client)
 
         # Check order of moves
-        response = self.player_1_client.get(
-            '/api/games/{}'.format(game_id),
-        )
+        response = self.player_1_client.get('/api/games/{}'.format(game_id), )
         self.assertEqual(response.status_code, 200)
 
         if self._first_player(response.json()) == OWNER:
@@ -503,9 +498,9 @@ class GamesAPITestCase(APITestCase, TestHelpers):
         self.assertListEqual(last_response_json['game']['board'],
                              expected_board)
         self.assertTrue(
-            all(map(lambda p: not p['won'],
-                    last_response_json['game']['players']))
-        )
+            all(
+                map(lambda p: not p['won'],
+                    last_response_json['game']['players'])))
 
         self._validate_me(self.default_game_mapping[order[0]], draws=1)
         self._validate_me(self.default_game_mapping[order[1]], draws=1)
