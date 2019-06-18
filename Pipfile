@@ -1,0 +1,40 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+
+[packages]
+attrs = "*"
+certifi = "*"
+chardet = "*"
+coreapi = "*"
+coreschema = "*"
+django-cors-headers = "*"
+django-extensions = "*"
+django-rest-swagger = "*"
+djangorestframework = "*"
+idna = "*"
+itypes = "*"
+jsonfield = "*"
+openapi-codec = "*"
+pluggy = "*"
+py = "*"
+pytest = "*"
+pytest-django = "*"
+pytz = "*"
+raven = "*"
+requests = "*"
+simplejson = "*"
+six = "*"
+typing = "*"
+uritemplate = "*"
+urllib3 = "*"
+Django = "*"
+Jinja2 = "*"
+MarkupSafe = "*"
+Werkzeug = "*"
+
+[requires]
+python_version = "3.7"
